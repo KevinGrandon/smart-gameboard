@@ -1,0 +1,23 @@
+{
+  "name": "smart-gameboard",
+  "version": "1.0.0",
+  "description": "Work in progress.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KevinGrandon/smart-gameboard.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/KevinGrandon/smart-gameboard/issues"
+  },
+  "homepage": "https://github.com/KevinGrandon/smart-gameboard#readme",
+  "dependencies": {
+    "hapi": "^15.1.1",
+    "node-fetch": "^1.6.3"
+  }
+}
