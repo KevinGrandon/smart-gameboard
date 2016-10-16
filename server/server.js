@@ -1,29 +1,57 @@
 const Hapi = require('hapi');
-const fetch = require('node-fetch');
 
 const server = new Hapi.Server();
 server.connection({ 
     port: process.env.PORT
 });
 
+var pinio = new (require('pinio')).Pinio()
+
+var lowestSensor = null
+
+function getCurrentRegion() {
+    return lowestSensor + 1
+}
+
+pinio.on('ready', function(board) {
+
+    var sensors = [
+        board.pins('A0'),
+        board.pins('A1'),
+        board.pins('A2'),
+        board.pins('A3')
+    ]
+
+    var currValues = new Array(4)
+
+    sensors.forEach((sensor, idx) => {
+        sensor.read((val) => {
+            currValues[idx] = val
+        })    
+    })
+
+    setInterval(() => {
+        for (var i = 0; i < currValues.length; i++) {
+            if (lowestSensor === null || currValues[i] < currValues[lowestSensor]) {
+                lowestSensor = i
+            }
+        }
+    }, 100)
+})
+
 // Add the route
 server.route({
     method: 'GET',
     path:'/', 
     handler: function (request, reply) {
-        fetch('https://api.spark.io/v1/devices/53ff70065067544858330687/spinnerValue/?access_token=' + process.env.ACCESS_TOKEN)
-        .then(function(res) {
-            return res.json();
-        }).then(function(json) {
-            reply(`<html>
-                <body>
-                    <h1>Spinner value: ${json.result}</h1>
-                    <script type="text/javascript">
-                    setTimeout(() => window.location.reload(), 500)
-                    </script>
-                </body>
-            </html>`);
-        });
+        reply(`<html>
+            <body>
+                <h1>Spinner value: ${getCurrentRegion()}</h1>
+                <script type="text/javascript">
+                setTimeout(() => window.location.reload(), 500)
+                </script>
+            </body>
+        </html>`);
     }
 });
 

@@ -18,6 +18,7 @@
   "homepage": "https://github.com/KevinGrandon/smart-gameboard#readme",
   "dependencies": {
     "hapi": "^15.1.1",
-    "node-fetch": "^1.6.3"
+    "node-fetch": "^1.6.3",
+    "pinio": "0.0.3"
   }
 }
