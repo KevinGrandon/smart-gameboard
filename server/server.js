@@ -2,15 +2,27 @@ const Hapi = require('hapi');
 
 const server = new Hapi.Server();
 server.connection({ 
-    port: process.env.PORT
+    port: process.env.PORT || 3000
 });
 
 var pinio = new (require('pinio')).Pinio()
 
+var numSensors = 8
+
+var currValues = new Array(numSensors)
+
 var lowestSensor = null
 
 function getCurrentRegion() {
-    return lowestSensor + 1
+    var region = lowestSensor * 2
+
+    var nextSensorIdx = lowestSensor + 1
+    if (nextSensorIdx >= numSensors) nextSensorIdx = 0
+    var nextSensorVal = currValues[nextSensorIdx]
+
+    if (nextSensorVal < 200) region++
+
+    return `${region + 1}<br>Lowest: (${lowestSensor})${currValues[lowestSensor]} Next:(${nextSensorIdx})${nextSensorVal}` // Account for 0-offset.
 }
 
 pinio.on('ready', function(board) {
@@ -19,10 +31,12 @@ pinio.on('ready', function(board) {
         board.pins('A0'),
         board.pins('A1'),
         board.pins('A2'),
-        board.pins('A3')
+        board.pins('A3'),
+        board.pins('A4'),
+        board.pins('A5'),
+        board.pins('A6'),
+        board.pins('A7'),
     ]
-
-    var currValues = new Array(4)
 
     sensors.forEach((sensor, idx) => {
         sensor.read((val) => {
@@ -33,10 +47,13 @@ pinio.on('ready', function(board) {
     setInterval(() => {
         for (var i = 0; i < currValues.length; i++) {
             if (lowestSensor === null || currValues[i] < currValues[lowestSensor]) {
-                lowestSensor = i
+                if (currValues[i] < 500) {
+                    lowestSensor = i
+                }
             }
         }
-    }, 100)
+        console.log(currValues);
+    }, 50)
 })
 
 // Add the route
@@ -48,7 +65,7 @@ server.route({
             <body>
                 <h1>Spinner value: ${getCurrentRegion()}</h1>
                 <script type="text/javascript">
-                setTimeout(() => window.location.reload(), 500)
+                setTimeout(() => window.location.reload(), 200)
                 </script>
             </body>
         </html>`);
